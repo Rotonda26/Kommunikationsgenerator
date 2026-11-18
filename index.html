@@ -1,0 +1,764 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rotonda Kommunikationsgenerator · Claude-Standard</title>
+  <style>
+    :root{
+      --bg:#f3eee5; --paper:#fffaf2; --paper2:#fbf4e8; --text:#322a21; --muted:#75695d;
+      --line:#d9cab5; --accent:#8b7658; --accent2:#b7a183; --soft:#eee4d5; --soft2:#e5d7c3;
+      --danger:#8c3b2e; --ok:#526b45; --shadow:0 18px 48px rgba(54,42,29,.11); --radius:22px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial, Helvetica, sans-serif;background:radial-gradient(circle at 12% 0%,#fff9ee 0,#f3eee5 40%,#eadfce 100%);color:var(--text);line-height:1.45}
+    .wrap{max-width:1240px;margin:0 auto;padding:34px 20px 58px}
+    header{display:grid;grid-template-columns:1.2fr .8fr;gap:22px;margin-bottom:22px}
+    .hero,.info,.panel{background:rgba(255,250,242,.88);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);backdrop-filter:blur(8px)}
+    .hero,.info{padding:28px}.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:800;margin-bottom:10px}
+    h1{font-size:37px;line-height:1.06;margin:0 0 12px;color:#2d251c} h2{font-size:21px;margin:0 0 12px} h3{font-size:16px;margin:18px 0 8px}.lead,.info p{color:var(--muted);margin:0;font-size:15px}.lead{font-size:17px;max-width:760px}
+    .badge{display:inline-flex;margin-top:14px;background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:8px 11px;color:#5d4d39;font-weight:800;font-size:12px}
+    .grid{display:grid;grid-template-columns:405px 1fr;gap:22px;align-items:start}.panel{padding:22px}
+    .stepTabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.stepTab,.tab{border:1px solid #d2c1aa;background:#fffaf2;color:#574632;border-radius:999px;padding:9px 12px;font-size:13px;font-weight:800;cursor:pointer}.stepTab.active,.tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+    .step{display:none}.step.active{display:block}
+    label{display:block;font-size:13px;font-weight:800;color:#45382b;margin:14px 0 7px} input,textarea,select{width:100%;border:1px solid #d5c5af;border-radius:14px;background:#fffdf8;color:var(--text);padding:12px 13px;font-size:14px;outline:none} textarea{min-height:96px;resize:vertical} input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(139,118,88,.16)}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.hint{font-size:12px;color:var(--muted);margin-top:7px}.small{font-size:12px;color:var(--muted)}
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.btn{border:0;border-radius:999px;padding:11px 15px;font-weight:900;cursor:pointer;font-size:13px}.primary{background:var(--accent);color:#fff}.secondary{background:#eadfce;color:#574632;border:1px solid #d2c1aa}.ghost{background:transparent;border:1px solid #d2c1aa;color:#574632}.btn[disabled]{opacity:.55;cursor:not-allowed}.btn:active{transform:translateY(1px)}
+    details{margin-top:14px;border:1px solid var(--line);background:var(--paper2);border-radius:16px;padding:12px 14px} summary{cursor:pointer;font-weight:900;color:#584832}.status{display:none;margin-top:14px;padding:12px 14px;border-radius:16px;background:#eee3d3;color:#584832;font-size:13px}.status.show{display:block}.status.err{background:#f1ddd8;color:var(--danger)}.status.ok{background:#e4ebdf;color:var(--ok)}
+    .rules{display:grid;gap:8px;margin-top:14px}.rule{font-size:12px;color:#655545;background:#f3eadc;border:1px solid #dfcfb9;padding:9px 10px;border-radius:12px}
+    .outTabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.output{display:none}.output.active{display:block}.meta{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px}.chip{font-size:12px;border-radius:999px;background:#efe4d5;border:1px solid #dac8af;padding:7px 9px;color:#5e4d38;max-width:100%;overflow:hidden;text-overflow:ellipsis}.tools{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:12px 0}.count{font-size:12px;color:var(--muted)}
+    .richBox{background:#fffdf8;border:1px solid #d8c8b2;border-radius:18px;padding:18px;min-height:380px;font-family:Arial, Helvetica, sans-serif;font-size:14px;line-height:1.5;color:#000;outline:none}.richBox p{margin:0 0 14px;font-family:Arial, Helvetica, sans-serif;font-size:14px;line-height:1.5;color:#000}.richBox a{color:#0600ff;text-decoration:underline}#linkedinText{white-space:normal}#linkedinText p{margin:0 0 9px 0!important;line-height:1.45!important}#linkedinText p:last-child{margin-bottom:0!important}#linkedinText br{line-height:inherit}.richBox strong{font-weight:800}.empty{background:rgba(255,250,242,.62);border:1px dashed #cbb798;border-radius:var(--radius);padding:36px;text-align:center;color:var(--muted)}
+    .qa{display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px}.check{display:flex;gap:8px;align-items:flex-start;background:#f6efe4;border:1px solid #dfcfb9;border-radius:12px;padding:8px 10px;font-size:12px;color:#655545}.check input{width:auto;margin-top:2px}.loader{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.58);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin-right:8px;vertical-align:-2px}@keyframes spin{to{transform:rotate(360deg)}}
+    .repairGrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+    .codeBox{width:100%;min-height:280px;font:12px/1.5 ui-monospace,Consolas,monospace;white-space:pre;tab-size:2}
+    .repairPreview{min-height:260px;background:#fff;border:1px solid #d8c8b2;border-radius:14px;padding:16px;overflow:auto}
+    .repairPreview, .repairPreview *:not(a){font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;color:#000}
+    .repairPreview a{color:#0600ff!important}
+    .repairTools{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.repairReport{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px;font-size:13px;color:#352d24}.repairReport>div{background:#f6efe4;border:1px solid #dfcfb9;padding:12px;border-radius:12px}.repairReport ul{margin:8px 0 0;padding-left:18px}@media(max-width:800px){.repairReport{grid-template-columns:1fr}}
+    .repairNote{font-size:12px;line-height:1.55;color:#685846}
+    @media(max-width:800px){.repairGrid{grid-template-columns:1fr}}
+    .footer{font-size:12px;color:var(--muted);margin-top:16px}.hidden{display:none!important}
+    @media(max-width:980px){header,.grid{grid-template-columns:1fr}h1{font-size:30px}.two{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <section class="hero">
+      <div class="eyebrow">Rotonda Business Club</div>
+      <h1>Event-Kommunikationsgenerator</h1>
+      <p class="lead">Stabilere Version: Event-Link einfügen, Eventdaten automatisch auslesen oder notfalls den Detailblock einfügen, kurz prüfen und fertige Mails sowie einen LinkedIn-Post im Rotonda-Stil erzeugen.</p>
+      <span class="badge">Beige · Direkt-Ausgabe · HubSpot-Formatkontrolle · HTML-Reparatur</span>
+    </section>
+    <aside class="info">
+      <h2>Neu in dieser Version</h2>
+      <p>Die App erkennt Eventdaten konservativer: Lieber ein Feld leer lassen als falsche Gastgeber oder Speaker übernehmen. Zusätzlich gibt es einen Fallback: Den sichtbaren Detailblock der Eventseite kann man in die App kopieren.</p>
+    </aside>
+  </header>
+
+  <main class="grid">
+    <section class="panel">
+      <div class="btns" style="margin:0 0 18px"><button class="btn secondary" type="button" id="goRepair">Mails-Format anpassen (HubSpot-HTML)</button></div>
+      <div class="stepTabs">
+        <button class="stepTab active" data-step="s1">1 Link</button>
+        <button class="stepTab" data-step="s2">2 Eventdaten</button>
+        <button class="stepTab" data-step="s3">3 Anpassen</button>
+      </div>
+
+      <div id="s1" class="step active">
+        <label for="eventUrl">Veranstaltungslink</label>
+        <input id="eventUrl" type="url" placeholder="https://rotonda.de/programm/..." />
+        <div class="hint">Die App liest die Seite automatisch aus. Wenn das technisch scheitert, bitte den sichtbaren Detailblock links unter dem Bild markieren, kopieren und unten einfügen.</div>
+        <label for="manualDetails">Optionaler Fallback: Eventdaten/Detailblock einfügen</label>
+        <textarea id="manualDetails" placeholder="Hier können Sie den sichtbaren Detailblock der Eventseite einfügen, z. B. Datum, Uhrzeit, Ort, Gastgeber, Speaker. Leer lassen, wenn das automatische Auslesen funktioniert."></textarea>
+        <details id="settings" open>
+          <summary>Einmalige KI-Einstellung</summary>
+          <label for="apiKey">Google AI Studio API-Key</label>
+          <input id="apiKey" type="password" placeholder="AIza..." autocomplete="off" />
+          <div class="hint">Der Key wird nur lokal in diesem Browser gespeichert.</div>
+          <div class="btns">
+            <button class="btn secondary" id="saveKey">Key speichern</button>
+            <button class="btn ghost" id="clearKey">Key löschen</button>
+          </div>
+        </details>
+        <div class="btns">
+          <button class="btn primary" id="loadFacts"><span id="loadLabel">Eventdaten aus Link laden</span></button>
+          <button class="btn secondary" id="generateDirect">Direkt generieren</button>
+        </div>
+      </div>
+
+      <div id="s2" class="step">
+        <h2>Eventdaten prüfen</h2>
+        <p class="small">Diese Felder steuern die Ausgabe. Was hier steht, wird in den Mails verwendet. Falsche Gastgeber oder Speaker können Sie hier direkt korrigieren.</p>
+        <label for="title">Eventtitel</label><input id="title" placeholder="Eventtitel" />
+        <div class="two">
+          <div><label for="date">Datum</label><input id="date" placeholder="z. B. Montag, 22. Juni 2026" /></div>
+          <div><label for="time">Uhrzeit</label><input id="time" placeholder="z. B. 18:00 Uhr" /></div>
+        </div>
+        <label for="location">Ort</label><input id="location" placeholder="Ort / Adresse" />
+        <label for="hosts">Gastgeber</label><input id="hosts" placeholder="z. B. Rotonda Business Club & leaders network" />
+        <label for="speakers">Speaker / Referent</label><input id="speakers" placeholder="Name(n), falls vorhanden" />
+        <label for="clubmanager">Clubmanager für Signatur</label><input id="clubmanager" placeholder="z. B. Janina Vensky" />
+        <div class="btns">
+          <button class="btn primary" id="generateFromFacts"><span id="genLabel">Texte generieren</span></button>
+          <button class="btn secondary goStep" data-step-target="s3">Feinjustierung öffnen</button>
+        </div>
+      </div>
+
+      <div id="s3" class="step">
+        <h2>Anpassen</h2>
+        <label for="audience">Zielgruppe</label>
+        <input id="audience" placeholder="z. B. Unternehmer und Führungskräfte" />
+        <label for="focus">Besonderheit / Fokus</label>
+        <textarea id="focus" placeholder="z. B. persönlicher, einladender, stärkerer Nutzen, weniger sachlich ..."></textarea>
+        <label for="linkedinTone">LinkedIn soll stärker...</label>
+        <select id="linkedinTone">
+          <option value="relevant und einladend, aber nicht werblich">relevant und einladend</option>
+          <option value="lebendiger und aufmerksamkeitsstärker, aber weiterhin professionell">lebendiger</option>
+          <option value="knapper und sachlicher">knapper und sachlicher</option>
+          <option value="persönlicher und nahbarer">persönlicher und nahbarer</option>
+        </select>
+        <div class="qa">
+          <label class="check"><input type="checkbox" id="ctaStrong" checked> Mails mit klarer, fett gesetzter CTA-Zeile inklusive klickbarem Event-Link ausgeben.</label>
+          <label class="check"><input type="checkbox" id="omitMissing" checked> Fehlende Eventdaten nicht erfinden, sondern die jeweilige Zeile weglassen.</label>
+        </div>
+        <div class="btns"><button class="btn primary" id="regenerate">Mit Feinjustierung neu generieren</button></div>
+      </div>
+
+      <div id="status" class="status"></div>
+      <div class="rules">
+        <div class="rule">Pflichtblock: Mitgliedsnummer-Token {{ contact.RBC-MG-Nummer }} und E-Mail-Token {{ contact.email }} werden wieder direkt eingesetzt.</div>
+        <div class="rule">HubSpot-Format: Arial, 14px, schwarz, Zeilenabstand 1.5. Links immer dunkelblau.</div>
+        <div class="rule">Einladung und Reminder mit Bildplatzhalter. Teilnahme-Mail ohne Bild und ohne Pflichtblock.</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div id="empty" class="empty">
+        <h2>Noch keine Ausgabe</h2>
+        <p>Starten Sie mit dem Event-Link. Danach können Sie Eventdaten prüfen und die Texte generieren.</p>
+      </div>
+      <div id="results" class="hidden">
+        <div class="outTabs">
+          <button class="tab active" data-tab="invite">Einladung</button>
+          <button class="tab" data-tab="reminder">Reminder</button>
+          <button class="tab" data-tab="participation">Teilnahme-Mail</button>
+          <button class="tab" data-tab="linkedin">LinkedIn</button>
+        </div>
+        <article id="invite" class="output active">
+          <h2>Einladungs-Mail</h2>
+          <div class="meta"><span class="chip" id="inviteSubject"></span><span class="chip" id="invitePreview"></span></div>
+          <div class="tools"><span class="count" id="inviteCount"></span><span><button class="btn secondary copyHtml" data-target="inviteText">Formatiert kopieren</button> <button class="btn ghost copySourceMail" data-target="inviteText">HTML für HubSpot</button> <button class="btn ghost copyPlain" data-target="inviteText">Nur Text</button></span></div>
+          <div class="richBox" id="inviteText" contenteditable="true"></div>
+        </article>
+        <article id="reminder" class="output">
+          <h2>Reminder-Mail</h2>
+          <div class="meta"><span class="chip" id="reminderSubject"></span><span class="chip" id="reminderPreview"></span></div>
+          <div class="tools"><span class="count" id="reminderCount"></span><span><button class="btn secondary copyHtml" data-target="reminderText">Formatiert kopieren</button> <button class="btn ghost copySourceMail" data-target="reminderText">HTML für HubSpot</button> <button class="btn ghost copyPlain" data-target="reminderText">Nur Text</button></span></div>
+          <div class="richBox" id="reminderText" contenteditable="true"></div>
+        </article>
+        <article id="participation" class="output">
+          <h2>Teilnahme-Mail</h2>
+          <div class="meta"><span class="chip" id="participationSubject"></span><span class="chip" id="participationPreview"></span></div>
+          <div class="tools"><span class="count" id="participationCount"></span><span><button class="btn secondary copyHtml" data-target="participationText">Formatiert kopieren</button> <button class="btn ghost copySourceMail" data-target="participationText">HTML für HubSpot</button> <button class="btn ghost copyPlain" data-target="participationText">Nur Text</button></span></div>
+          <div class="richBox" id="participationText" contenteditable="true"></div>
+        </article>
+        <article id="linkedin" class="output">
+          <h2>LinkedIn-Post</h2>
+          <div class="meta"><span class="chip">Social Post</span><span class="chip">Datum, Ort und Link am Ende</span></div>
+          <div class="tools"><span class="count" id="linkedinCount"></span><button class="btn secondary copyPlain" data-target="linkedinText">Post kopieren</button></div>
+          <div class="richBox" id="linkedinText" contenteditable="true"></div>
+        </article>
+      </div>
+    </section>
+  </main>
+  <section class="panel" id="repairSection" style="margin-top:22px">
+    <h2>HubSpot-Mailing: Format reparieren</h2>
+    <p class="lead" style="font-size:14px">Kopieren Sie in HubSpot den bestehenden HTML-Quellcode Ihrer Mail und fügen Sie ihn links ein. Die App bereinigt nach dem vollständigen Rotonda/Claude-Standard: Arial 14px, Farbe, Absatzabstände, Links, Info-Block und Listen. Inhalte und Tokens bleiben unverändert. Inhalte, Links, Bilder und HubSpot-Tokens sollen dabei erhalten bleiben.</p>
+    <div class="repairGrid" style="margin-top:18px">
+      <div>
+        <label for="repairInput">Bisheriger HTML-Quellcode aus HubSpot</label>
+        <textarea id="repairInput" class="codeBox" spellcheck="false" placeholder="Hier den HTML-Quellcode aus HubSpot einfügen ..."></textarea>
+        <div class="repairTools"><button class="btn primary" id="repairRun">Mail-Format anpassen</button><button class="btn ghost" id="repairClear">Felder leeren</button></div>
+      </div>
+      <div>
+        <label for="repairOutput">Bereinigter HTML-Quellcode</label>
+        <textarea id="repairOutput" class="codeBox" spellcheck="false" readonly placeholder="Nach der Bereinigung erscheint hier der neue Quellcode."></textarea>
+        <div class="repairTools"><button class="btn secondary" id="repairCopySource">HTML-Code kopieren</button><button class="btn secondary" id="repairCopyRich">Formatiert kopieren</button></div>
+      </div>
+    </div>
+    <h3>Vorschau – so soll die Mail in HubSpot aussehen</h3>
+    <div id="repairPreview" class="repairPreview"></div>
+    <div id="repairMessage" class="status" aria-live="polite"></div><div id="repairReport" class="repairReport" aria-live="polite"></div>
+    <p class="repairNote">Ziel: Arial · 14px · Text schwarz · Zeilenabstand 1,5 · Links blau (#0600ff). Fettungen und Eventlinks bleiben erhalten. Bei komplexen HubSpot-Vorlagen mit Tabellen, Personalisierungs-Tokens oder responsiven Spezialformatierungen bitte im HubSpot-Editor und per Testmail kontrollieren. Der Editor kann eigene Vorlagen-Styles anwenden. Der API-Key wird für diese Reparaturfunktion nicht benötigt.</p>
+  </section>
+  <div class="footer">Hinweis: Die Ausgabe bleibt ein KI-Entwurf. Der neue Eventdaten-Reiter sorgt dafür, dass falsche oder fehlende Informationen vor der Generierung korrigiert werden können.</div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const state={pageText:'',url:'',factsLoaded:false,lastFacts:null};
+const ids=['eventUrl','manualDetails','apiKey','status','loadFacts','loadLabel','generateDirect','generateFromFacts','genLabel','regenerate','empty','results','title','date','time','location','hosts','speakers','clubmanager','audience','focus','linkedinTone','ctaStrong','omitMissing'];
+const el=Object.fromEntries(ids.map(id=>[id,$(id)]));
+const savedKey=localStorage.getItem('rotonda_gemini_key'); if(savedKey) el.apiKey.value=savedKey;
+function setStatus(msg,type=''){el.status.className='status show '+type;el.status.textContent=msg} function clearStatus(){el.status.className='status';el.status.textContent=''}
+function normalizeUrl(u){u=(u||'').trim();return !u?'':/^https?:\/\//i.test(u)?u:'https://'+u}
+function setBusy(which,on){ if(which==='load'){el.loadFacts.disabled=on;el.loadLabel.innerHTML=on?'<span class="loader"></span>Lädt Eventdaten':'Eventdaten aus Link laden'} else {el.generateFromFacts.disabled=on;el.regenerate.disabled=on;el.generateDirect.disabled=on;el.genLabel.innerHTML=on?'<span class="loader"></span>Erstellt Texte':'Texte generieren'} }
+function showStep(id){document.querySelectorAll('.stepTab').forEach(b=>b.classList.toggle('active',b.dataset.step===id));document.querySelectorAll('.step').forEach(s=>s.classList.toggle('active',s.id===id))}
+document.querySelectorAll('.stepTab,.goStep').forEach(b=>b.addEventListener('click',()=>showStep(b.dataset.step||b.dataset.stepTarget)));
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.output').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(b.dataset.tab).classList.add('active')}));
+$('saveKey').addEventListener('click',()=>{const k=el.apiKey.value.trim();if(!k){setStatus('Bitte zuerst einen API-Key einfügen.','err');return}localStorage.setItem('rotonda_gemini_key',k);setStatus('API-Key wurde lokal gespeichert.','ok')});
+$('clearKey').addEventListener('click',()=>{localStorage.removeItem('rotonda_gemini_key');el.apiKey.value='';setStatus('API-Key wurde gelöscht.','ok')});
+
+async function fetchEventContent(url){
+  const clean=normalizeUrl(url);
+  const attempts=[
+    {name:'Jina Reader',u:'https://r.jina.ai/'+clean},
+    {name:'AllOrigins',u:'https://api.allorigins.win/raw?url='+encodeURIComponent(clean)},
+    {name:'CorsProxy',u:'https://corsproxy.io/?'+encodeURIComponent(clean)}
+  ];
+  const errors=[];
+  for(const a of attempts){
+    try{
+      setStatus('Veranstaltungsseite wird ausgelesen ... '+a.name);
+      const res=await fetch(a.u,{headers:{Accept:'text/plain, text/html, application/json'}});
+      if(!res.ok) throw new Error(a.name+' HTTP '+res.status);
+      const t=await res.text();
+      if(t && t.trim().length>250){
+        const body=t.slice(0,75000);
+        const plain=htmlToText(body);
+        const errorPage=/^(?:error|access denied|forbidden|not found|too many requests|internal server error|just a moment)/i.test(plain.slice(0,90)) || /(?:Failed to fetch|CORS policy|rate limit exceeded)/i.test(plain.slice(0,450));
+        const eventSignals=/(?:Datum|Uhrzeit|Location|Ort|Gastgeber|Referent|Speaker|Event|Veranstaltung|Workshop|StartDate)/i.test(plain.slice(0,20000));
+        if(!errorPage && eventSignals) return body.slice(0,52000);
+        errors.push(a.name+': keine verwertbaren Veranstaltungsdaten');
+        continue;
+      }
+      errors.push(a.name+': zu wenig Inhalt');
+    }catch(e){errors.push(a.name+': '+(e.message||'Load failed'));}
+  }
+  throw new Error('Load failed: Die Eventseite konnte nicht automatisch gelesen werden. Bitte Link prüfen oder später erneut testen.');
+}
+function decodeHtml(str){const txt=document.createElement('textarea'); txt.innerHTML=str||''; return txt.value;}
+function htmlToText(raw){
+  let s=raw||'';
+  s=s.replace(/<script[\s\S]*?<\/script>/gi,'\n').replace(/<style[\s\S]*?<\/style>/gi,'\n');
+  s=s.replace(/<br\s*\/?\s*>/gi,'\n').replace(/<\/p>|<\/div>|<\/li>|<\/h\d>/gi,'\n');
+  s=s.replace(/<[^>]+>/g,' ');
+  s=decodeHtml(s);
+  return s.replace(/\u00a0/g,' ').replace(/[ \t]+/g,' ').replace(/\n[ \t]+/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
+}
+function jsonLdFacts(raw){
+  const out={};
+  const scripts=[...String(raw||'').matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)].map(m=>decodeHtml(m[1].trim()));
+  function walk(x){
+    if(!x) return;
+    if(Array.isArray(x)){x.forEach(walk);return}
+    if(typeof x==='object'){
+      const type=Array.isArray(x['@type'])?x['@type'].join(' '):String(x['@type']||'');
+      if(/Event/i.test(type)||x.startDate||x.location){
+        if(x.name&&!out.title) out.title=x.name;
+        if(x.startDate&&!out.startDate) out.startDate=x.startDate;
+        if(x.endDate&&!out.endDate) out.endDate=x.endDate;
+        if(x.location&&!out.location){
+          const loc=x.location;
+          const name=loc.name||'';
+          const adr=loc.address;
+          let addr='';
+          if(typeof adr==='string') addr=adr;
+          else if(adr) addr=[adr.streetAddress,adr.postalCode,adr.addressLocality].filter(Boolean).join(', ');
+          out.location=[name,addr].filter(Boolean).join(', ');
+        }
+        const org=x.organizer||x.host||x.performer;
+        if(org&&!out.hosts){
+          const arr=Array.isArray(org)?org:[org];
+          out.hosts=arr.map(o=>typeof o==='string'?o:o.name).filter(Boolean).join(' & ');
+        }
+        if(x.performer&&!out.speakers){
+          const arr=Array.isArray(x.performer)?x.performer:[x.performer];
+          out.speakers=arr.map(o=>typeof o==='string'?o:o.name).filter(Boolean).join(', ');
+        }
+      }
+      Object.values(x).forEach(walk);
+    }
+  }
+  for(const s of scripts){try{walk(JSON.parse(s))}catch(e){}}
+  if(out.startDate){
+    const d=new Date(out.startDate); if(!isNaN(d)){
+      out.date=d.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+      const st=d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}).replace(':','.').replace('.',':');
+      let time=st+' Uhr';
+      if(out.endDate){const e=new Date(out.endDate); if(!isNaN(e)){time=st+' - '+e.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr';}}
+      out.time=time;
+    }
+  }
+  return out;
+}
+function cleanSpeaker(s){
+  s=(s||'').replace(/\s+/g,' ').trim();
+  if(!s) return '';
+  // Lange Social-/Award-Ketten entfernen, aber Name + kurze Rolle behalten
+  s=s.replace(/\s*\|\s*(Top\s*100|LI\s*#|Red Fox|Host\s+The Paths|Autorin|Visionärin|Mentorin).*$/i,'');
+  const parts=s.split('|').map(x=>x.trim()).filter(Boolean);
+  if(parts.length>2) s=parts.slice(0,2).join(' | ');
+  return s;
+}
+function cleanHost(h,title){
+  h=(h||'').replace(/\s+/g,' ').trim();
+  if(!h) return '';
+  const t=(title||'').slice(0,25).toLowerCase();
+  if(t && h.toLowerCase().includes(t)) return '';
+  h=h.replace(/^\w+\s+[–-]\s+/,'').trim();
+  return h;
+}
+function extractByLabel(text,label){
+  const lines=text.split(/\n+/).map(x=>x.trim().replace(/^(?:[-*]\s+|#{1,5}\s*)/,'').replace(/\*\*/g,'').trim()).filter(Boolean);
+  const re=new RegExp('^('+label+')\\s*:?\\s*(.*)$','i');
+  for(let i=0;i<lines.length;i++){
+    const m=lines[i].match(re);
+    if(m){
+      let v=(m[2]||'').trim();
+      if(!v && lines[i+1] && !/^\s*(Datum|Uhrzeit|Ort|Location|Gastgeber|Host|Veranstalter|Speaker|Referent)/i.test(lines[i+1])) v=lines[i+1].trim();
+      return sanitizeField(v,label);
+    }
+  }
+  return '';
+}
+function sanitizeField(v,label){
+  v=(v||'').replace(/\s+/g,' ').replace(/^[:\-–]+\s*/,'').trim();
+  // Keine langen Fließtextabsätze als Eventdaten übernehmen.
+  if(v.length>220 && !/Speaker|Referent/i.test(label)) return '';
+  if(/Gastgeber|Host|Veranstalter/i.test(label)){
+    if(/[?.!]\s/.test(v) || /Sie\s|wir\s|Einladung|Anmeldung|Event/i.test(v) && v.length>90) return '';
+  }
+  return v;
+}
+function extractLocalFacts(raw){
+  const text=htmlToText(raw);
+  const j=jsonLdFacts(raw);
+  const out={...j};
+  if(!out.title){
+    let m=text.match(/^Title:\s*(.+)$/mi)||text.match(/\n([^\n]{10,140})\s+-\s+ROTONDA\b/i);
+    if(m) out.title=m[1].trim().replace(/\s+-\s+ROTONDA$/i,'');
+  }
+  const combo=extractByLabel(text,'Datum\\s*&\\s*Uhrzeit|Datum und Uhrzeit|Termin');
+  if(combo){
+    const parts=combo.split(/\s*\|\s*/);
+    if(!out.date) out.date=parts[0]||'';
+    if(!out.time && parts[1]) out.time=parts.slice(1).join(' | ');
+  }
+  out.date=out.date||extractByLabel(text,'Datum');
+  out.time=out.time||extractByLabel(text,'Uhrzeit|Zeit');
+  out.location=extractByLabel(text,'Ort|Location|Veranstaltungsort|Adresse')||out.location;
+  out.hosts=extractByLabel(text,'Gastgeber|Host|Veranstalter')||out.hosts;
+  out.speakers=extractByLabel(text,'Speaker\\s*/\\s*Referent(?:in|innen)?|Speaker|Referent(?:in|innen)?')||out.speakers;
+  out.hosts=cleanHost(out.hosts,out.title);
+  out.speakers=cleanSpeaker(out.speakers);
+  // Gastgeber niemals aus allgemeinen Seitentexten erraten.
+  return {title:out.title||'',date:out.date||'',time:out.time||'',location:out.location||'',hosts:out.hosts||'',speakers:out.speakers||'',clubmanager:out.clubmanager||'',shortTopic:'',reasons:[],rawWarnings:[]};
+}
+
+async function callGemini(prompt,temp=.25){const key=el.apiKey.value.trim()||localStorage.getItem('rotonda_gemini_key'); if(!key) throw new Error('Bitte einmalig einen Google AI Studio API-Key hinterlegen.'); const endpoint=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`; const res=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{temperature:temp,responseMimeType:'application/json'}})}); const data=await res.json(); if(!res.ok) throw new Error(data?.error?.message||'Die KI-Ausgabe konnte nicht erstellt werden.'); const text=(data?.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('\n'); try{return JSON.parse(text)}catch(e){const m=text.match(/\{[\s\S]*\}/); if(m) return JSON.parse(m[0]); throw new Error('Die KI-Ausgabe konnte nicht gelesen werden.')}}
+function factsPrompt(url,text,localFacts){return `Extrahiere strukturierte Eventdaten aus dieser Rotonda-Veranstaltungsseite. Antworte nur als JSON. Erfinde nichts. Wenn etwas nicht eindeutig im Text steht, gib einen leeren String aus. Gib lieber leere Felder aus als falsche Werte.\n\nWICHTIG ZUR QUELLE DER EVENTDETAILS:\n- Nutze vorrangig die Veranstaltungsdetails aus der linken Detailbox unter dem Bild bzw. aus dem kompakten Infoblock der Eventseite.\n- Typische Labels in dieser Box sind: Datum, Uhrzeit, Ort/Location, Gastgeber, Speaker, Referent, Referentin.\n- Übernimm Datum, Uhrzeit und Ort aus dieser Detailbox, nicht aus dem Fließtext oder Ablauf.\n- Gastgeber NUR aus expliziten Zeilen wie Gastgeber, Host, Veranstalter übernehmen. Niemals den Eventtitel als Gastgeber übernehmen.\n- Speaker/Referenten sind die Personen, die inhaltlich sprechen. Verwechsle sie nicht mit Gastgebern.\n- Bei Speaker/Referent bitte nur Name + kurze Rolle übernehmen. Keine komplette LinkedIn-Vita, keine langen Titelketten, keine Awards, keine Hashtags. Wenn keine Person eindeutig als Speaker/Referent genannt wird, leer lassen.\n- Beim Ort bitte die vollständige Location/Adresse aus der Detailbox übernehmen.\n\nURL: ${url}\n\nJSON-Struktur: {"title":"","date":"","time":"","location":"","hosts":"","speakers":"","clubmanager":"","shortTopic":"","reasons":["","",""],"rawWarnings":[""]}\n\nSEITENINHALT:\n${text}`}
+function fillFacts(f){el.title.value=f.title||'';el.date.value=f.date||'';el.time.value=f.time||'';el.location.value=f.location||'';el.hosts.value=f.hosts||'';el.speakers.value=f.speakers||'';el.clubmanager.value=f.clubmanager||''; if(f.shortTopic&&!el.focus.value) el.focus.value=f.shortTopic; state.lastFacts=f; state.factsLoaded=true}
+async function loadFacts(){
+  clearStatus();
+  const url=normalizeUrl(el.eventUrl.value);
+  const pasted=(el.manualDetails?.value||'').trim();
+  if(!url && !pasted){setStatus('Bitte einen Veranstaltungslink einfügen oder den Detailblock der Eventseite einfügen.','err');return false}
+  state.url=url;
+  state.pageText=''; state.factsLoaded=false;
+  setBusy('load',true);
+  try{
+    if(pasted){
+      state.pageText=pasted;
+      setStatus('Eingefügter Detailblock wird ausgewertet ...');
+    } else {
+      state.pageText=await fetchEventContent(url);
+    }
+    const local=extractLocalFacts(state.pageText);
+    fillFacts(local);
+    setStatus('Eventdaten werden aus dem Detailblock geprüft ...','ok');
+    let f={};
+    try{
+      f=await callGemini(factsPrompt(url,state.pageText,local),.04);
+    }catch(aiErr){
+      f={};
+      setStatus('KI-Prüfung war nicht möglich. Die lokal erkannten Daten wurden eingetragen. Bitte kurz prüfen.','ok');
+    }
+    const merged={};
+    ['title','date','time','location','hosts','speakers','clubmanager','shortTopic'].forEach(k=>{
+      merged[k]=(local[k]||f[k]||'').trim ? (local[k]||f[k]||'').trim() : (local[k]||f[k]||'');
+    });
+    merged.hosts=cleanHost(merged.hosts,merged.title);
+    merged.speakers=cleanSpeaker(merged.speakers);
+    // Konservativ bleiben: lieber leer als falscher Gastgeber aus Titel/Fließtext.
+    if(merged.hosts && merged.title && merged.hosts.toLowerCase().includes(merged.title.slice(0,22).toLowerCase())) merged.hosts='';
+    fillFacts(merged);
+    const missing=['date','time','location','hosts','speakers'].filter(k=>!merged[k]);
+    if(missing.length){
+      setStatus('Eventdaten wurden soweit möglich geladen. Bitte fehlende Felder kurz ergänzen: '+missing.join(', ')+'.','ok');
+    }else{
+      setStatus('Eventdaten geladen. Bitte nur kurz prüfen, besonders Gastgeber und Speaker.','ok');
+    }
+    showStep('s2');
+    return true;
+  }catch(e){
+    // Nicht komplett stoppen: Nutzer kann Daten prüfen/eintragen.
+    state.pageText=pasted || '';
+    fillFacts(extractLocalFacts(state.pageText));
+    showStep('s2');
+    setStatus('Automatisches Auslesen ist fehlgeschlagen. Bitte den Detailblock der Eventseite in Schritt 1 einfügen oder die Felder hier kurz korrigieren.','err');
+    return false;
+  }finally{setBusy('load',false)}
+}
+el.eventUrl.addEventListener('input',()=>{
+ const url=normalizeUrl(el.eventUrl.value);
+ if(url!==state.url){
+   state.pageText='';state.factsLoaded=false;state.lastFacts={};
+   ['title','date','time','location','hosts','speakers','clubmanager'].forEach(k=>{if(el[k])el[k].value=''});
+   if(el.manualDetails)el.manualDetails.value='';
+   setStatus('Neuer Veranstaltungslink: Bitte Eventdaten neu laden.','ok');
+ }
+});
+el.loadFacts.addEventListener('click',loadFacts);
+function getFacts(){return {title:el.title.value.trim(),date:el.date.value.trim(),time:el.time.value.trim(),location:el.location.value.trim(),hosts:el.hosts.value.trim(),speakers:el.speakers.value.trim(),clubmanager:el.clubmanager.value.trim(),audience:el.audience.value.trim(),focus:el.focus.value.trim(),linkedinTone:el.linkedinTone.value,ctaStrong:el.ctaStrong.checked,omitMissing:el.omitMissing.checked,url:state.url||normalizeUrl(el.eventUrl.value)}}
+function genPrompt(facts){return `Du bist der Kommunikationsassistent des Rotonda Business Clubs. Erstelle eine komplette Kommunikationsstrecke für ein Event.
+
+VERBINDLICHE EVENTDATEN AUS DER APP:
+${JSON.stringify(facts,null,2)}
+
+SEITENINHALT ALS KONTEXT, NUR ZUR INHALTLICHEN EINORDNUNG. Die verbindlichen Eventdaten oben haben Vorrang:
+${state.pageText.slice(0,26000)}
+
+WICHTIGE REGEL: Verwende bei Datum, Uhrzeit, Ort, Gastgeber und Speaker exakt die Angaben aus den verbindlichen Eventdaten. Ändere diese Angaben nicht. Wenn ein Feld leer ist und omitMissing=true, lasse die Zeile weg. Erfinde niemals Gastgeber oder Speaker.
+
+ALLGEMEINE ROTONDA-REGELN:
+- Deutsch, Sie-Ansprache, kein Gendern.
+- Professionell, klar, nahbar, menschlich.
+- Kurze Sätze, ein Gedanke pro Satz.
+- Keine Floskeln, keine typische ChatGPT-Sprache, nicht werblich, nicht übertrieben.
+- Keine Emojis und keine Hashtags in Mails. Im LinkedIn-Post sind nur die Icons ⏰ und 📍 am Ende erlaubt.
+- Keine Preise/Beiträge/Kosten.
+- Keinen Ablauf und keine Ablauf-Uhrzeiten nennen. Nur die Event-Uhrzeit aus dem Feld Uhrzeit ist erlaubt.
+- Keine langen Speaker-Biografien. Bei Speaker nur Name und ggf. eine kurze Rolle, nicht die komplette Vita.
+- Keine Dopplungen von Datum, Uhrzeit, Ort, Gastgeber oder Speaker.
+- Event-Link in Mails immer als klickbarer Text hinterlegen. URL nicht ausschreiben.
+
+MAIL-FORMAT ALS HTML:
+- Body-Felder als sauberes HTML ausgeben. Keine Markdown-Sterne.
+- Stil muss HubSpot-tauglich sein: Arial, 14px, schwarz, Zeilenabstand 1.5. Links dunkelblau.
+- Jede Mail beginnt mit dieser Anrede-Zeile als eigenem Absatz. Die Token-Platzhalter dürfen nicht umformuliert werden:
+  <p>{{ contact.informelle_anrede_mailing }} {{ contact.anrede_frau_herr }} {{ contact.title }} {{ contact.lastname }},</p>
+- Verwende keine Bulletpoints in den Mails, außer die Eventseite erzwingt es inhaltlich. Lieber kurze Absätze.
+
+EINLADUNG - PFLICHT FÜR DEN EINSTIEG:
+- Nach der Anrede kommt zuerst ein kurzer Relevanz-Einstieg ohne Eventtitel. Dieser erste Absatz soll das Thema öffnen und Interesse wecken.
+- Erst im zweiten inhaltlichen Absatz muss die Einladung mit dem verlinkten Eventtitel stehen.
+- Nutze im zweiten Absatz eine Formulierung in dieser Art:
+  <p>Wir laden Sie herzlich zu unserem Event <a href="${facts.url}"><strong>${facts.title || 'Eventtitel'}</strong></a> ein.</p>
+- Der Absatz darf stilistisch etwas angepasst werden, aber Eventtitel, Link und Einladung müssen im zweiten Absatz vorkommen.
+
+REMINDER - PFLICHT FÜR DEN ERSTEN ABSCHNITT:
+- Die Reminder-Mail muss direkt an das konkrete Event erinnern.
+- Der Eventtitel steht in deutschen Anführungszeichen und soll mit dem Veranstaltungslink hinterlegt sein.
+- Nutze eine Formulierung in dieser Art:
+  <p>wir möchten Sie noch einmal herzlich an unser bevorstehendes Event <a href="${facts.url}"><strong>„${facts.title || 'Eventtitel'}“</strong></a> erinnern.</p>
+- Bei Online-Events darf im Satz ONLINE-Event stehen, wenn die Eventdaten das nahelegen.
+
+EVENTDETAILS:
+- Eventdetails dürfen pro Mail nur einmal vorkommen.
+- Nutze in Einladungs-, Reminder- und Teilnahme-Mail diesen Detailsblock. Nur die Labels fett, die konkreten Angaben nicht fett:
+  <p><strong>Datum & Uhrzeit:</strong> ${facts.date || '[Datum]'} | ${facts.time || '[Uhrzeit]'}<br><strong>Ort:</strong> ${facts.location || '[Ort]'}<br><strong>Gastgeber:</strong> ${facts.hosts || '[Gastgeber]'}<br><strong>Speaker / Referent:</strong> ${facts.speakers || '[Name, falls vorhanden]'}</p>
+- Beim Speaker in den Eventdetails nur Namen und kurze Rolle nennen. Keine langen Titelketten, keine Awards, keine Social-Media-Auszeichnungen.
+- Wenn mehrere weibliche Referentinnen erkennbar sind, darf das Label <strong>Speaker / Referentinnen:</strong> heißen. Bei gemischten oder unklaren Personen nutze <strong>Speaker / Referent:</strong>.
+- Wichtig: Label und Inhalt müssen immer in derselben Zeile stehen. Kein Zeilenumbruch direkt nach dem Doppelpunkt.
+- Wenn Speaker/Referent leer ist und omitMissing=true, lasse die Speaker-Zeile weg. Wenn Gastgeber leer ist und omitMissing=true, lasse die Gastgeber-Zeile weg.
+
+CTA UND BILDPLATZIERUNG:
+- Einladungs-Mail: Nach den Eventdetails kommt der CTA als eigener Absatz: <p><a href="${facts.url}"><strong>Hier geht es zur Anmeldung!</strong></a></p>
+- Reminder-Mail: Nach den Eventdetails kommt der CTA als eigener Absatz: <p><a href="${facts.url}"><strong>Jetzt anmelden</strong></a></p>
+- Direkt nach dem CTA kommt in Einladung und Reminder der Bildplatzhalter: <p>[BILD / FOTO ZUM EVENT EINFÜGEN]</p>
+- Der Bildplatzhalter darf in der Reminder-Mail NICHT vor den Eventdetails stehen.
+- Teilnahme-Mail: kein Bild, kein Pflichtblock, kein Anmelde-CTA.
+
+PFLICHTBLOCK FÜR EINLADUNG UND REMINDER:
+- Den folgenden Block inhaltlich exakt verwenden.
+- Mitgliedsnummer-Token exakt so ausgeben: {{ contact.RBC-MG-Nummer }}
+- E-Mail-Token exakt so ausgeben: {{ contact.email }}
+<p>Unsere <strong>Mitglieder</strong> des Rotonda Business Clubs sehen hier ihre Mitgliedsnummer „{{ contact.RBC-MG-Nummer }}“ und können diese zusammen mit ihrer bei uns hinterlegten E-Mail-Adresse {{ contact.email }} für die digitale Anmeldung nutzen.</p>
+<p>Wer noch <strong>kein Mitglied</strong> des Rotonda Business Clubs ist, kann sich einfach mit der eigenen E-Mail-Adresse zu dem Event anmelden.</p>
+<p>Wir freuen uns über Ihre Anmeldung!</p>
+
+ABSCHLUSS EINLADUNG UND REMINDER:
+<p>Mit besten Grüßen aus Ihrem Club<br>${facts.clubmanager || '[Clubmanager]'} & Sabine Falke</p>
+
+ABSCHLUSS TEILNAHME:
+<p>Wir freuen uns, Sie vor Ort begrüßen zu dürfen.<br>Mit besten Grüßen aus Ihrem Club<br>${facts.clubmanager || '[Clubmanager]'} & Sabine Falke</p>
+
+EINLADUNGSMAIL:
+- Maximal 1.500 bis 2.000 Zeichen inklusive Leerzeichen.
+- 2 Betreffzeilen, 2 Preheader.
+- Einstieg muss Relevanz erzeugen, nicht generisch sein.
+- Der erste Absatz nach der Anrede ist ein kurzer Relevanz-Einstieg ohne Eventtitel.
+- Der zweite Absatz enthält die Einladung mit verlinktem Eventtitel.
+- 2 bis 3 konkrete Gründe für die Teilnahme, aber nicht als lange Liste.
+- Eventdetails nur einmal.
+- Reihenfolge: Anrede, kurzer Relevanz-Einstieg ohne Eventtitel, Einladung mit verlinktem Eventtitel, kurzer Nutzen, Eventdetails, CTA, Bildplatzhalter, Pflichtblock, Abschluss.
+
+REMINDER-MAIL:
+- Maximal 1.200 bis 1.500 Zeichen.
+- Deutlich knapper als Einladung. Nicht einfach wiederholen. Keine künstliche Dringlichkeit.
+- 2 Betreffzeilen, 2 Preheader.
+- Der erste Abschnitt erinnert an das Event mit Titel in deutschen Anführungszeichen.
+- Eventdetails nur einmal.
+- Reihenfolge: Anrede, Reminder-Text mit Eventtitel, kurzer Teilnahmegrund, Eventdetails, CTA „Jetzt anmelden“, Bildplatzhalter, Pflichtblock, Abschluss.
+
+TEILNAHME-/BESTÄTIGUNGSMAIL:
+- Maximal 800 bis 1.000 Zeichen.
+- 1 sachliche Betreffzeile, optional kurzer Preview.
+- Dank für Anmeldung, Eventtitel, Termin/Ort, Vorfreude, Eventdetails, Abschluss.
+- Kein Bild, kein Pflichtblock, kein Anmelde-CTA.
+
+LINKEDIN-POST:
+- Fertiger Post im Rotonda-Stil.
+- ${facts.linkedinTone}.
+- Ziel: Der Post soll so klingen wie interne Rotonda-Beispiele: konkret, ruhig, relevant, nicht glatt und nicht werblich. Keine allgemeine Eventwerbung.
+- 900 bis 1.400 Zeichen sind erlaubt, wenn der Inhalt dadurch besser wird. Keine Hashtags.
+- Absätze kurz und ruhig, maximal 3 Zeilen. Keine leeren HTML-Absätze, keine doppelten Leerabsätze, keine zusätzlichen Abstandshalter (<br><br> oder &nbsp;). Verwende je Gedankenabschnitt genau ein <p>, bei Aufzählungen eine eigene Zeile; keine Absatz-Styles aus E-Mails.
+- Starte mit einer zugespitzten Frage oder Beobachtung. Beispielhafte Richtung: „Was zeichnet kluge Köpfe in Wirtschaft und Unternehmertum heute aus?“ oder „Viele Geschäftsführer sind auf LinkedIn sichtbar. Aber nicht immer wird klar, wofür sie stehen.“
+- Danach: Kontext des Events. Warum ist das Thema für Unternehmer und Führungskräfte relevant?
+- Danach: konkreter Mehrwert. Nutze möglichst 3–4 kurze 👉-Zeilen unter einer Überschrift wie „Das nehmen Sie aus dem Format mit:“ oder „Im Fokus:“.
+- Nenne Format, Standort, Gastgeber und relevante Personen, soweit vorhanden. Keine langen Speaker-Biografien.
+- Keine generischen Sätze wie „Wir laden Sie herzlich ein, Teil dieses Austauschs zu sein.“
+- Schluss IMMER in dieser Reihenfolge:
+  <p>⏰ ${facts.date || ''}${facts.time ? ', ' + facts.time : ''}<br>📍 ${facts.location || ''}</p>
+  <p>Weitere Informationen und Anmeldung:<br>→ <a href="${facts.url}">${facts.title || '[LINK]'} - ROTONDA</a></p>
+- Der Link steht also am Ende. Datum und Ort stehen direkt davor.
+- LinkedIn darf im Gegensatz zu den Mails die Icons 👉, ⏰ und 📍 nutzen.
+
+AUSGABE NUR ALS JSON OHNE MARKDOWN:
+{"invite":{"subjects":["",""],"preheaders":["",""],"html":""},"reminder":{"subjects":["",""],"preheaders":["",""],"html":""},"participation":{"subject":"","preview":"","html":""},"linkedin":{"html":""},"qualityWarnings":[""]}`}
+function plainTextFromHtml(html){const d=document.createElement('div'); d.innerHTML=html||''; return d.innerText.trim()}
+function asList(v){return Array.isArray(v)?v.filter(Boolean).join(' · '):(v||'')}
+// Claude/RBC-Standard: dieselbe HTML-Normalisierung für generierte Mails und HubSpot-Reparatur.
+const MAIL_PARAGRAPH_STYLE='margin:0 0 14px 0; font-size: 14px; line-height: 1.5; font-family: Arial, Helvetica, sans-serif; color: #000000;';
+const MAIL_TIGHT_STYLE=MAIL_PARAGRAPH_STYLE.replace('margin:0 0 14px 0','margin:0');
+const MAIL_LAST_STYLE=MAIL_TIGHT_STYLE;
+const MAIL_LINK_STYLE='color: #0600ff; font-weight: bold;';
+const INFO_LABEL=/^(?:Datum(?:\s*&\s*Uhrzeit)?|Uhrzeit|Ort|Location|Gastgeber|Speaker\s*\/\s*Referent(?:in)?|Referent(?:in)?|Einwahldaten|Besprechungs-ID|Passcode):/i;
+function htmlAsDoc(html){return new DOMParser().parseFromString('<div id="rbc-clean-root">'+(html||'')+'</div>','text/html').getElementById('rbc-clean-root')}
+function stripTracking(href,report){
+  const raw=(href||'').trim(); if(!raw)return raw;
+  if(/^javascript:/i.test(raw))return '';
+  try{const u=new URL(raw,location.href);
+    if(/^club\.rotonda\.de$/i.test(u.hostname)&&u.pathname.startsWith('/e3t/')){
+      report.warnings.add('HubSpot-Tracking-Link (club.rotonda.de/e3t/) unverändert gelassen.');return raw;
+    }
+    if(!/^https?:$/i.test(u.protocol))return raw;
+    let changed=false;
+    for(const key of [...u.searchParams.keys()])if(/^(utm_|_hsenc$|_hsmi$|hsCtaTracking$|__hstc$|__hssc$|__hsfp$)/i.test(key)){u.searchParams.delete(key);changed=true}
+    if(changed){report.changes.add('Tracking-Parameter aus normalen Links entfernt.');return u.toString()}
+  }catch(e){} return raw;
+}
+function normalizeHubSpotHtml(html){
+ const report={changes:new Set(),warnings:new Set()};
+ const root=htmlAsDoc(html);
+ if(!root)return {html:'',changes:[],warnings:['HTML konnte nicht verarbeitet werden.']};
+ // Nicht vertrauenswürdige aktive Elemente entfernen; HTML-Tokens bleiben unverändert.
+ root.querySelectorAll('script,style,iframe,object,embed,form,input,button,textarea,select,meta,base,link').forEach(n=>n.remove());
+ root.querySelectorAll('*').forEach(n=>{
+  [...n.attributes].forEach(a=>{if(/^on/i.test(a.name))n.removeAttribute(a.name)});
+  if(n.hasAttribute('href')){const before=n.getAttribute('href');const after=stripTracking(before,report); if(after)n.setAttribute('href',after);else n.removeAttribute('href')}
+ });
+ // Unterstreichungen entfernen, sonstige starke Hervorhebungen erhalten.
+ root.querySelectorAll('b').forEach(n=>{const st=document.createElement('strong');st.innerHTML=n.innerHTML;n.replaceWith(st)});
+ root.querySelectorAll('span,font').forEach(n=>{
+   const bold=/font-weight\s*:\s*(bold|[6-9]00)/i.test(n.getAttribute('style')||'');
+   if(bold){const strong=document.createElement('strong');while(n.firstChild)strong.append(n.firstChild);n.replaceWith(strong)}
+   else n.replaceWith(...[...n.childNodes]);
+ });
+ root.querySelectorAll('u').forEach(n=>n.replaceWith(...[...n.childNodes]));
+ // Div-Container auflösen, aber Absatzgrenzen wahren.
+ [...root.querySelectorAll('div')].reverse().forEach(n=>{
+   const children=[...n.childNodes];
+   const hasBlocks=children.some(c=>c.nodeType===1 && /^(P|DIV|UL|OL|TABLE|BLOCKQUOTE|H[1-6])$/.test(c.tagName));
+   if(hasBlocks){n.replaceWith(...children)}else{const p=document.createElement('p');children.forEach(c=>p.append(c));n.replaceWith(p)}
+ });
+ // Freistehende Zeilen und br-Umbrüche in eigene Absätze überführen.
+ function splitLines(container){
+   const nodes=[...container.childNodes];let pending=[];
+   function emit(){if(!pending.length)return;const p=document.createElement('p');container.insertBefore(p,pending[0]);pending.forEach(n=>p.append(n));pending=[]}
+   for(const node of nodes){
+     if(node.nodeType===1 && node.tagName==='BR'){
+       if(node.parentNode===container){emit();node.remove();continue}
+     }
+     if(node.nodeType===1 && /^(P|UL|OL|TABLE|BLOCKQUOTE|H[1-6])$/.test(node.tagName)){emit();continue}
+     if(node.nodeType===3 && !node.textContent.trim()&&!pending.length){node.remove();continue}
+     pending.push(node)
+   }emit();
+ }
+ splitLines(root);
+ // br in Absätzen: auf mehrere benachbarte p verteilen, auch bei Eventdetails.
+ [...root.querySelectorAll('p')].forEach(p=>{
+   const original=p.innerHTML;
+   if(!/<br\s*\/?\s*>/i.test(original))return;
+   const parts=original.split(/<br\s*\/?\s*>/i);
+   p.innerHTML=parts.shift();let prev=p;
+   for(const part of parts){const next=document.createElement('p');next.innerHTML=part;prev.after(next);prev=next}
+ });
+ // Jeweils Label und Wert auf einer Zeile zusammenführen.
+ [...root.querySelectorAll('p')].forEach(p=>{
+   const t=(p.textContent||'').trim();
+   if(!INFO_LABEL.test(t)||!/:\s*$/.test(t))return;
+   const next=p.nextElementSibling;
+   if(next?.tagName==='P'&&(next.textContent||'').trim()&&!INFO_LABEL.test((next.textContent||'').trim())){
+     p.innerHTML=p.innerHTML.trim()+' '+next.innerHTML.trim();next.remove();report.changes.add('Eventdetail-Labels und Werte auf einer Zeile zusammengeführt.');
+   }
+ });
+ // Normalisierung der Text-Leerzeichen, ohne Token-Inhalte zu verändern.
+ const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);const texts=[];
+ while(walker.nextNode())texts.push(walker.currentNode);
+ for(const n of texts){const old=n.nodeValue;let v=old.replace(/\u00a0/g,' ').replace(/[ \t]{2,}/g,' ');
+  // Keine Verschiebung/Änderung des Inhalts von Personalisierungs-Tokens.
+  if(v!==old){n.nodeValue=v;report.changes.add('Geschützte Leerzeichen und doppelte Abstände vereinheitlicht.')}
+ }
+ root.querySelectorAll('p').forEach(p=>{
+   // Eventuell durch HubSpot hinzugefügte Leerzeichen am Absatzrand entfernen.
+   const first=p.firstChild,last=p.lastChild;
+   if(first?.nodeType===3)first.nodeValue=first.nodeValue.replace(/^\s+/,'');
+   if(last?.nodeType===3)last.nodeValue=last.nodeValue.replace(/\s+$/,'');
+   if(!p.textContent.trim()&&!p.querySelector('img,svg,picture')){p.remove();report.changes.add('Leere Absätze entfernt (Abstand über 14px-Margin).')}
+ });
+ // Bild-Absätze: img-Attribute in der Originalform erhalten.
+ root.querySelectorAll('img').forEach(img=>{
+   if(img.parentElement?.tagName==='P')return;
+   const p=document.createElement('p');img.before(p);p.append(img);
+ });
+ root.querySelectorAll('a').forEach(a=>{
+   for(const attr of [...a.attributes])if(!['href','rel'].includes(attr.name))a.removeAttribute(attr.name);
+   a.setAttribute('rel','noopener');a.setAttribute('style',MAIL_LINK_STYLE);
+   if(/^\[([^\]]+)\]\(https?:\/\/[^)]+\)$/.test(a.textContent.trim())){
+     a.textContent=a.textContent.trim().match(/^\[([^\]]+)\]/)[1]; report.changes.add('Markdown-Syntax in einem Link entfernt.');
+   }
+   if(!a.textContent.trim()&&!a.querySelector('img'))a.remove();
+ });
+ root.querySelectorAll('strong').forEach(n=>{for(const a of [...n.attributes])n.removeAttribute(a.name);if(!n.textContent.trim()&&!n.querySelector('img'))n.remove()});
+ root.querySelectorAll('p').forEach(p=>{
+   const t=p.textContent.trim();
+   p.removeAttribute('id');p.removeAttribute('class');p.removeAttribute('align');
+   for(const a of [...p.attributes])if(a.name!=='style')p.removeAttribute(a.name);
+   p.setAttribute('style',MAIL_PARAGRAPH_STYLE);
+   if(INFO_LABEL.test(t)&&(/^(?:Datum|Uhrzeit|Ort|Location|Gastgeber|Speaker|Referent|Einwahldaten|Besprechungs-ID|Passcode)/i.test(t))) {
+     // Fettung allein auf das Label, Inhalt nicht fett (wenn nicht im Original hervorgehoben).
+     const match=t.match(INFO_LABEL);
+     if(match && !p.querySelector('strong') && p.firstChild?.nodeType===3){
+       const txt=p.firstChild;const label=txt.nodeValue.match(INFO_LABEL);
+       if(label){txt.nodeValue=txt.nodeValue.slice(label[0].length);const strong=document.createElement('strong');strong.textContent=label[0];p.insertBefore(strong,txt)}
+     }
+     p.setAttribute('style',MAIL_TIGHT_STYLE);
+   }
+   if(p.querySelector('img'))p.setAttribute('style','margin:0 0 14px 0; text-align: left;');
+   if(/^(Jetzt anmelden|Hier geht es zur Anmeldung!?|Link zur Teilnahme\s*-\s*bitte hier klicken)$/i.test(t)){
+      p.setAttribute('style','margin:0 0 14px 0; font-size: 14px; line-height: 1.5; font-family: Arial, Helvetica, sans-serif; color: #000000;');
+      if(p.querySelector('a')&&!p.querySelector('strong')){const a=p.querySelector('a');const st=document.createElement('strong');a.before(st);st.append(a)}
+   }
+ });
+ const info=[...root.querySelectorAll('p')].filter(p=>INFO_LABEL.test(p.textContent.trim()));
+ for(let i=0;i<info.length;i++){
+   const p=info[i],n=p.nextElementSibling;
+   if(n?.tagName==='P'&&INFO_LABEL.test(n.textContent.trim()))p.setAttribute('style',MAIL_TIGHT_STYLE);
+   else p.setAttribute('style',MAIL_PARAGRAPH_STYLE);
+ }
+ root.querySelectorAll('ul,ol').forEach(ul=>{
+   ul.setAttribute('style','margin:0 0 14px 0; padding-left: 20px; font-size: 14px; line-height: 1.5; font-family: Arial, Helvetica, sans-serif; color: #000000;');
+   ul.querySelectorAll('li').forEach(li=>{li.setAttribute('style','margin:0; font-size: 14px; line-height: 1.5;');li.querySelectorAll('p').forEach(p=>p.replaceWith(...[...p.childNodes]))});
+ });
+ // Letzter Textabsatz bleibt ohne Außenabstand.
+ const ps=[...root.querySelectorAll('p')];if(ps.length)ps[ps.length-1].style.margin='0';
+ // Bekannte Standort-Footer haben keine Abstände außer nach der Telefonzeile.
+ const footerStart=ps.findIndex(p=>/^Rotonda Business-Club Network GmbH$/i.test(p.textContent.trim()));
+ if(footerStart>=0){for(const p of ps.slice(footerStart)){p.style.margin='0';if(/^T\s*\+\d/.test(p.textContent.trim()))p.style.margin='0 0 14px 0'}}
+ // Verdächtige Angaben melden statt verändern.
+ const content=root.textContent||'';
+ if(/\{\{\s*contact\./.test(content))report.changes.add('HubSpot-Personalisierungs-Tokens unverändert beibehalten.');
+ if(!/Jetzt anmelden|Hier geht es zur Anmeldung|Link zur Teilnahme/i.test(content))report.warnings.add('Kein üblicher Anmelde- oder Teilnahme-Linktext erkannt; bitte prüfen.');
+ if(!root.querySelector('img')&&!/BILD EINFÜGEN|\[BILD/i.test(content))report.warnings.add('Kein Bild erkannt (je nach Mailingtyp beabsichtigt).');
+ const dates=[...content.matchAll(/\b(?:Montag|Dienstag|Mittwoch|Donnerstag|Freitag|Samstag|Sonntag),?\s+(\d{1,2})\.\s*(Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)\s+(20\d{2})/gi)];
+ for(const m of dates){const days=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];const month=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'].indexOf(m[2]);const date=new Date(Number(m[3]),month,Number(m[1]));if(date.getDay()!==days.findIndex(x=>x.toLowerCase()===m[0].split(',')[0].split(' ')[0].toLowerCase()))report.warnings.add('Wochentag und Datum könnten voneinander abweichen.');if(date<new Date(new Date().toDateString()))report.warnings.add('Ein genanntes Veranstaltungsdatum liegt in der Vergangenheit.')}
+ report.changes.add('Absätze mit Arial 14px, Schwarz und Zeilenabstand 1,5 vereinheitlicht; beabsichtigte Absatzabstände beibehalten.');
+ report.changes.add('Links in #0600ff und fett formatiert.');
+ return {html:root.innerHTML,changes:[...report.changes],warnings:[...report.warnings]};
+}
+function buildMailHtml(html){return normalizeHubSpotHtml(html).html}
+function wrapForHubspot(html){return buildMailHtml(html)}
+function cleanLinkedInHtml(html){
+ const root=document.createElement('div');root.innerHTML=html||'';
+ // LinkedIn ist kein HubSpot-Mailing: keine Mail-Abstands- oder Schriftregeln anwenden.
+ root.querySelectorAll('p').forEach(p=>{
+   if(!p.textContent.replace(/\u00a0/g,' ').trim()&&!p.querySelector('img')){p.remove();return}
+   p.removeAttribute('style');
+ });
+ root.querySelectorAll('div').forEach(div=>div.removeAttribute('style'));
+ root.querySelectorAll('span').forEach(span=>span.removeAttribute('style'));
+ return root.innerHTML;
+}
+function setOut(id,html){$(id).innerHTML=id==='linkedinText'?cleanLinkedInHtml(html):wrapForHubspot(html||'');}
+function linkedinPlainText(node){
+ const root=node.cloneNode(true);
+ // Echte Absatzgrenzen als genau eine Leerzeile in den kopierten Text übertragen.
+ let parts=[];
+ for(const child of [...root.childNodes]){
+   if(child.nodeType===Node.TEXT_NODE){const x=(child.textContent||'').trim();if(x)parts.push(x);continue}
+   if(child.nodeType!==Node.ELEMENT_NODE)continue;
+   const tag=child.tagName.toLowerCase();
+   if(tag==='p'||tag==='div'||tag==='li'){
+     const text=child.innerText.trim();if(text)parts.push(text);
+   }else{
+     const text=child.innerText.trim();if(text)parts.push(text);
+   }
+ }
+ return parts.join('\n\n').replace(/\n{3,}/g,'\n\n').trim();
+}
+function fillOutput(d){el.empty.classList.add('hidden');el.results.classList.remove('hidden'); $('inviteSubject').textContent=asList(d.invite?.subjects)||'Betreffzeilen'; $('invitePreview').textContent=asList(d.invite?.preheaders)||'Preheader'; setOut('inviteText',d.invite?.html); $('inviteCount').textContent=plainTextFromHtml(d.invite?.html).length+' Zeichen'; $('reminderSubject').textContent=asList(d.reminder?.subjects)||'Betreffzeilen'; $('reminderPreview').textContent=asList(d.reminder?.preheaders)||'Preheader'; setOut('reminderText',d.reminder?.html); $('reminderCount').textContent=plainTextFromHtml(d.reminder?.html).length+' Zeichen'; $('participationSubject').textContent=d.participation?.subject||'Betreff'; $('participationPreview').textContent=d.participation?.preview||'Bestätigung'; setOut('participationText',d.participation?.html); $('participationCount').textContent=plainTextFromHtml(d.participation?.html).length+' Zeichen'; setOut('linkedinText',d.linkedin?.html); const p=plainTextFromHtml(d.linkedin?.html); $('linkedinCount').textContent=p.length+' Zeichen · '+(p?p.split(/\s+/).length:0)+' Wörter'}
+async function generate(auto=false){clearStatus(); if(auto && !state.factsLoaded){const ok=await loadFacts(); if(!ok) return} if(!state.pageText){const url=normalizeUrl(el.eventUrl.value); if(url){state.url=url; setStatus('Seiteninhalt wird für die Ausgabe geladen ...'); try{state.pageText=await fetchEventContent(url)}catch(e){setStatus(e.message,'err');return}}} const facts=getFacts(); if(!facts.url){setStatus('Bitte zuerst einen Veranstaltungslink einfügen.','err');return} if(!facts.title&&!facts.date&&!facts.location){setStatus('Bitte Eventdaten laden oder mindestens Titel, Datum und Ort manuell eintragen.','err'); showStep('s2'); return} setBusy('gen',true); try{setStatus('Kommunikationsstrecke wird nach Rotonda-Regeln erstellt ...'); const data=await callGemini(genPrompt(facts),.32); fillOutput(data); setStatus('Fertig. Bitte Gastgeber, Speaker, Eventdetails und Links kurz prüfen. Die Texte sind direkt im Feld bearbeitbar.','ok')}catch(e){setStatus(e.message||'Fehler bei der Generierung.','err')}finally{setBusy('gen',false)}}
+el.generateDirect.addEventListener('click',()=>generate(true)); el.generateFromFacts.addEventListener('click',()=>generate(false)); el.regenerate.addEventListener('click',()=>generate(false));
+async function copyHtml(target){const box=$(target); const html=wrapForHubspot(box.innerHTML); const text=box.innerText; try{await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([text],{type:'text/plain'})})]); setStatus('Formatiert kopiert: Arial 14px, schwarz, Zeilenabstand 1.5; Links #0600ff und fett, leere Absätze entfernt. Falls HubSpot dennoch 16px anzeigt, in HubSpot die Quellcode-Ansicht verwenden.','ok')}catch(e){await navigator.clipboard.writeText(text); setStatus('Nur Text kopiert. Der Browser hat HTML-Kopie blockiert.','ok')}}
+async function copyPlain(target){const node=$(target); const txt=target==='linkedinText'?linkedinPlainText(node):node.innerText.trim();await navigator.clipboard.writeText(txt); setStatus('Text kopiert.','ok')}
+async function copyMailSource(target){
+ const html=wrapForHubspot($(target).innerHTML);
+ try{await navigator.clipboard.writeText(html);setStatus('HTML-Quellcode kopiert. In HubSpot über die Quellcode-Ansicht einfügen; so bleiben die 14px direkt auf jedem Absatz.','ok')}
+ catch(e){setStatus('Kopieren blockiert. Bitte die HTML-Quellcode-Ansicht im Bereich Mails-Format anpassen verwenden.','err')}
+}
+document.querySelectorAll('.copySourceMail').forEach(b=>b.addEventListener('click',()=>copyMailSource(b.dataset.target)));
+document.querySelectorAll('.copyHtml').forEach(b=>b.addEventListener('click',()=>copyHtml(b.dataset.target))); document.querySelectorAll('.copyPlain').forEach(b=>b.addEventListener('click',()=>copyPlain(b.dataset.target)));
+
+// HTML-Reparatur als eigenständiges Werkzeug, ohne KI oder Eventlink.
+const repairInput=$('repairInput'),repairOutput=$('repairOutput'),repairPreview=$('repairPreview'),repairMessage=$('repairMessage');
+$('goRepair').addEventListener('click',()=>$('repairSection').scrollIntoView({behavior:'smooth',block:'start'}));
+function repairStatus(msg,err=false){repairMessage.className='status show '+(err?'err':'ok');repairMessage.textContent=msg}
+function runRepair(){
+  const original=repairInput.value;
+  if(!original.trim()){repairStatus('Bitte zuerst den HTML-Quellcode aus HubSpot einfügen.',true);return false}
+  const result=normalizeHubSpotHtml(original);
+  const cleaned=result.html;
+  repairOutput.value=cleaned;
+  repairPreview.innerHTML=cleaned;
+  $('repairReport').innerHTML='<div><strong>Korrekturen</strong><ul>'+result.changes.map(x=>'<li>'+x+'</li>').join('')+'</ul></div><div><strong>Zu prüfen</strong><ul>'+(result.warnings.length?result.warnings.map(x=>'<li>'+x+'</li>').join(''):'<li>Keine automatischen Auffälligkeiten erkannt.</li>')+'</ul></div>'; 
+  repairStatus('HTML bereinigt. Prüfen Sie die Vorschau und die spätere Testmail in HubSpot.');
+  return true;
+}
+$('repairRun').addEventListener('click',runRepair);
+$('repairClear').addEventListener('click',()=>{repairInput.value='';repairOutput.value='';repairPreview.innerHTML='';$('repairReport').innerHTML='';repairMessage.className='status'});
+$('repairCopySource').addEventListener('click',async()=>{
+  if(!repairOutput.value.trim()&&!runRepair())return;
+  try{await navigator.clipboard.writeText(repairOutput.value);repairStatus('HTML-Quellcode kopiert. In HubSpot in die Quellcode-Ansicht einfügen.')}catch(e){repairOutput.select();repairStatus('Automatisches Kopieren nicht verfügbar. Code ist markiert – bitte manuell kopieren.',true)}
+});
+$('repairCopyRich').addEventListener('click',async()=>{
+  if(!repairOutput.value.trim()&&!runRepair())return;
+  try{
+    await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([repairOutput.value],{type:'text/html'}),'text/plain':new Blob([repairPreview.innerText],{type:'text/plain'})})]);
+    repairStatus('Formatiert kopiert. In den HubSpot-Rich-Text-Editor einfügen und prüfen.');
+  }catch(e){repairStatus('Der Browser erlaubt kein formatiertes Kopieren. Bitte „HTML-Code kopieren“ für die HubSpot-Quellcode-Ansicht nutzen.',true)}
+});
+</script>
+</body>
+</html>
