@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Rotonda Kommunikationsgenerator · Claude-Standard</title>
+<!-- Wiederhergestellte Fassung: vorheriger Daten-Fix mit Speaker-Label-Korrektur. -->
   <style>
     :root{
       --bg:#f3eee5; --paper:#fffaf2; --paper2:#fbf4e8; --text:#322a21; --muted:#75695d;
@@ -544,7 +545,7 @@ const MAIL_PARAGRAPH_STYLE='margin:0 0 14px 0; font-size: 14px; line-height: 1.5
 const MAIL_TIGHT_STYLE=MAIL_PARAGRAPH_STYLE.replace('margin:0 0 14px 0','margin:0');
 const MAIL_LAST_STYLE=MAIL_TIGHT_STYLE;
 const MAIL_LINK_STYLE='color: #0600ff; font-weight: bold;';
-const INFO_LABEL=/^(?:Datum(?:\s*&\s*Uhrzeit)?|Uhrzeit|Ort|Location|Gastgeber|Speaker\s*\/\s*Referent(?:in)?|Referent(?:in)?|Einwahldaten|Besprechungs-ID|Passcode):/i;
+const INFO_LABEL=/^(?:Datum(?:\s*(?:&|und)\s*Uhrzeit)?|Uhrzeit|Ort|Location|Gastgeber|Speaker(?:\s*\/\s*Referent(?:in|innen)?)?|Referent(?:in|innen)?|Einwahldaten|Besprechungs-ID|Passcode)\s*:/i;
 function htmlAsDoc(html){return new DOMParser().parseFromString('<div id="rbc-clean-root">'+(html||'')+'</div>','text/html').getElementById('rbc-clean-root')}
 function stripTracking(href,report){
   const raw=(href||'').trim(); if(!raw)return raw;
